@@ -1,12 +1,169 @@
-# Getting Started with Create React App
+# Formulaire d'Inscription React
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Application React permettant à un utilisateur de s'inscrire via un formulaire avec validation complète côté client et sauvegarde dans le `localStorage`.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Fonctionnalités
 
-### `npm start`
+- Saisie de 6 champs : **Nom**, **Prénom**, **Email**, **Date de naissance**, **Ville**, **Code postal**
+- Validation à la soumission :
+  - Blocage des utilisateurs de moins de **18 ans**
+  - Code postal au **format français** (5 chiffres)
+  - Nom, prénom et ville : lettres, espaces, tirets et apostrophes uniquement (min. 2 caractères)
+  - Email : format valide (`xxx@yyy.zzz`)
+- Sauvegarde des données dans le **localStorage** (`registeredUser`)
+- Affichage d'un **message de succès** personnalisé après inscription
+- Messages d'erreur accessibles (`role="alert"`, `aria-describedby`)
+
+---
+
+## Technologies
+
+| Outil | Version |
+|---|---|
+| React | 19.x |
+| react-scripts | 5.0.1 |
+| @testing-library/react | 16.x |
+| @testing-library/jest-dom | 6.x |
+| Jest (embarqué) | 27.x |
+
+---
+
+## Installation
+
+```bash
+npm install
+```
+
+---
+
+## Démarrage
+
+```bash
+npm start
+```
+
+Ouvre l'application sur [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Tests
+
+### Lancer tous les tests avec couverture
+
+```bash
+npm run test -- --watchAll=false
+```
+
+### Résultat attendu
+
+```
+Test Suites: 3 passed, 3 total
+```
+
+Couverture **100 %** sur :
+
+| Fichier | Stmts | Branch | Funcs | Lines |
+|---|---|---|---|---|
+| `src/App.js` | 100 | 100 | 100 | 100 |
+| `src/utils/validators.js` | 100 | 100 | 100 | 100 |
+| `src/components/RegisterForm.js` | 100 | 100 | 100 | 100 |
+
+> `src/index.js`, `src/reportWebVitals.js` et `src/module.js` sont exclus de la couverture.
+
+---
+
+## Structure du projet
+
+```
+src/
+├── App.js                          # Composant racine
+├── App.test.js                     # Tests d'intégration App
+├── index.js                        # Point d'entrée (exclu de la couverture)
+├── reportWebVitals.js              # Web vitals (exclu de la couverture)
+├── utils/
+│   ├── validators.js               # Fonctions de validation
+│   └── validators.test.js          # Tests unitaires des validateurs
+└── components/
+    ├── RegisterForm.js             # Composant formulaire
+    ├── RegisterForm.css            # Styles du formulaire
+    └── RegisterForm.test.js        # Tests d'intégration du formulaire
+```
+
+---
+
+## Règles de validation
+
+### Nom / Prénom / Ville
+
+| Règle | Détail |
+|---|---|
+| Longueur minimale | 2 caractères (après trim) |
+| Caractères autorisés | Lettres (a-z, A-Z, accents français), espaces, tirets `-`, apostrophes `'` |
+
+### Email
+
+| Règle | Détail |
+|---|---|
+| Format | Doit respecter `xxx@yyy.zzz` |
+| Valeur vide | Refusée |
+
+### Date de naissance
+
+| Règle | Détail |
+|---|---|
+| Âge minimum | 18 ans révolus à la date de soumission |
+| Calcul | Tient compte du mois et du jour exact (pas seulement l'année) |
+
+### Code postal
+
+| Règle | Détail |
+|---|---|
+| Format | Exactement **5 chiffres** |
+| Exemples valides | `75001`, `13000`, `69001` |
+
+---
+
+## API — Fonctions de validation (`src/utils/validators.js`)
+
+```js
+validateNom(value: string): string | null
+validatePrenom(value: string): string | null
+validateEmail(value: string): string | null
+validateDateDeNaissance(value: string): string | null  // format YYYY-MM-DD
+validateVille(value: string): string | null
+validateCodePostal(value: string): string | null
+validateForm(formData: object): object   // retourne { nom, prenom, email, dateDeNaissance, ville, codePostal }
+isFormValid(errors: object): boolean
+```
+
+Chaque fonction retourne `null` si la valeur est valide, ou un `string` contenant le message d'erreur.
+
+---
+
+## localStorage
+
+À la soumission réussie, les données sont sérialisées en JSON sous la clé `registeredUser` :
+
+```json
+{
+  "nom": "Dupont",
+  "prenom": "Jean",
+  "email": "jean.dupont@example.com",
+  "dateDeNaissance": "1995-06-15",
+  "ville": "Paris",
+  "codePostal": "75001"
+}
+```
+
+---
+
+## Accessibilité
+
+- Chaque champ possède un `<label>` associé via `htmlFor` / `id`
+- Les messages d'erreur utilisent `role="alert"` pour être annoncés par les lecteurs d'écran
+- L'attribut `aria-describedby` pointe vers le message d'erreur du champ concerné lorsqu'une erreur est présente
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
