@@ -1,21 +1,25 @@
 name: Build, Test and Deploy React Application
 
-# controle
 on:
-  # Trigger the workflow on push or pull request events to the main branch
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
-# jobs
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build_test:
     runs-on: ubuntu-latest
 
-    # steps
     steps:
-      # checkout the repository
       - uses: actions/checkout@v3
 
       - name: Use Node.js 20.x
@@ -23,8 +27,41 @@ jobs:
         with:
           node-version: 20.x
 
-      - name: npm ci, build and test
-        run: |
-          npm ci
-          npm run build --if-present
-          npm test
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+        env:
+          CI: true
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+  deploy:
+    needs: build_test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v3
+
+         
+
