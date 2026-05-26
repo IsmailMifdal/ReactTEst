@@ -20,7 +20,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "build": "react-scripts build",
-    "build-npm": "SET NODE_ENV=production && npx babel src --out-dir dist --copy-files",
+    "build-npm": "cross-env NODE_ENV=production npx babel src --out-dir dist --copy-files",
     "test": "react-scripts test --coverage --collectCoverageFrom=src/**/*.{js,jsx} --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js --collectCoverageFrom=!src/module.js --watchAll=false",
     "eject": "react-scripts eject"
   },
@@ -46,6 +46,7 @@
     "@babel/cli": "^7.29.7",
     "@babel/core": "^7.29.7",
     "@babel/plugin-transform-react-jsx": "^7.29.7",
+    "cross-env": "^10.1.0",
     "gh-pages": "^6.3.0",
     "react-test-renderer": "^19.2.5"
   }
