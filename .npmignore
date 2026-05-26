@@ -1,0 +1,12 @@
+src/
+public/
+build/
+coverage/
+.github/
+.claude/
+node_modules/
+*.test.js
+*.test.jsx
+*.yml
+setupTests.js
+reportWebVitals.js

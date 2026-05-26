@@ -1,16 +1,18 @@
 {
-  "name": "test_react_pro",
+  "name": "register-form-ismail",
   "version": "0.1.0",
-  "private": true,
+  "main": "dist/index.js",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
+  },
+  "peerDependencies": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "homepage": "https://IsmailMifdal.github.io/ReactTEst",
   "scripts": {
@@ -18,6 +20,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "build": "react-scripts build",
+    "build-npm": "SET NODE_ENV=production && npx babel src --out-dir dist --copy-files",
     "test": "react-scripts test --coverage --collectCoverageFrom=src/**/*.{js,jsx} --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js --collectCoverageFrom=!src/module.js --watchAll=false",
     "eject": "react-scripts eject"
   },
@@ -40,6 +43,9 @@
     ]
   },
   "devDependencies": {
+    "@babel/cli": "^7.29.7",
+    "@babel/core": "^7.29.7",
+    "@babel/plugin-transform-react-jsx": "^7.29.7",
     "gh-pages": "^6.3.0",
     "react-test-renderer": "^19.2.5"
   }
