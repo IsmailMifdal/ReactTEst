@@ -102,7 +102,7 @@ jobs:
       - name: Bump version and publish
         run: |
           npm version patch --no-git-tag-version
-          git add dist/ package.json package-lock.json
+          git add package.json package-lock.json
           git commit -m "up cicd"
           npm publish --access public
           git push
