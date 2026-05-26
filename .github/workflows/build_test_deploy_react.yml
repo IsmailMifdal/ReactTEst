@@ -58,6 +58,10 @@ jobs:
     needs: build_test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
 
     environment:
       name: github-pages
