@@ -1,6 +1,6 @@
 {
   "name": "register-form-ismail",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "dist/index.js",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
