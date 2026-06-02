@@ -37,10 +37,15 @@ jobs:
         env:
           CI: true
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-react
+          fail_ci_if_error: false
+          verbose: true
 
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
