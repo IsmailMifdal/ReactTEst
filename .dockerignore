@@ -1,0 +1,12 @@
+node_modules
+build
+dist
+coverage
+*.log
+.git
+.env
+.dockeringnore
+Dokerfile
+/server/DockerfileNodejs
+DokerfileReact
+/server/node_modules

@@ -1,0 +1,101 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: db/Dockerfile
+    container_name: migration_container
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - ynov_net
+    volumes:
+      - db_data:/var/lib/mysql
+      # Scripts SQL montés en volume (exécutés à l'init, ordre alphabétique)
+      - ./sqlfiles:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_NAME=ynov_ci
+    restart: unless-stopped
+    networks:
+      - ynov_net
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      # curl (GET) récupère les en-têtes, grep vérifie le code HTTP 200 ; échoue (exit != 0) sinon
+      test: ["CMD-SHELL", "curl -s -D - -o /dev/null http://localhost:8000/ | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+      start_interval: 5s
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    networks:
+      - ynov_net
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  react:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    container_name: react
+    restart: unless-stopped
+    networks:
+      - ynov_net
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://api:8000
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+    command: npm start
+    healthcheck:
+      # Le dev-server écoute sur l'IP du conteneur, pas sur localhost
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://$$(hostname -i):3000/ || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 40s
+
+
+networks:
+  ynov_net:
+    driver: bridge
+
+volumes:
+  db_data:
