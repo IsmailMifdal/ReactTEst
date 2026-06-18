@@ -1,23 +1,23 @@
 RENDU - Architecture Docker MySQL / Adminer / Python / React
 =============================================================
 
-# Repository
-https://github.com/IsmailMifdal/ReactTEst
+- Repository :
+  https://github.com/IsmailMifdal/ReactTEst
 
-# Frontend deploye (GitHub Pages)
-https://IsmailMifdal.github.io/ReactTEst
+- Frontend deploye sur GitHub Pages :
+  https://IsmailMifdal.github.io/ReactTEst
 
-# Backend deploye (Vercel)
-https://react-cicd-ismailmifdals-projects.vercel.app
+- Backend deploye sur Vercel :
+  https://react-cicd-ismailmifdals-projects.vercel.app
 
-# Image Docker frontend (Docker Hub)
-https://hub.docker.com/r/angry21/frontend
+- Image Docker du frontend sur Docker Hub :
+  https://hub.docker.com/r/angry21/frontend
 
-# Image Docker backend (Docker Hub)
-https://hub.docker.com/r/angry21/backend
+- Image Docker du backend sur Docker Hub :
+  https://hub.docker.com/r/angry21/backend
 
-# Codecov
-https://app.codecov.io/gh/IsmailMifdal/ReactTEst
+- Codecov :
+  https://app.codecov.io/gh/IsmailMifdal/ReactTEst
 
 
 Identifiants administrateur (seedes a l'initialisation de la base) :
