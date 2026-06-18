@@ -32,8 +32,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # URL du backend déployé sur Vercel (appelé par le front en prod)
-          REACT_APP_API_URL: https://react-cicd-ismailmifdals-projects.vercel.app
+          # URL de l'API déployée sur Vercel (appelée par le front Pages en prod)
+          REACT_APP_API_URL: https://react-cicd-ismailmifdals-projects.vercel.app/api
 
       - name: Test
         run: npm test

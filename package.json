@@ -22,6 +22,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "build": "react-scripts build",
+    "vercel-build": "cross-env PUBLIC_URL=/ REACT_APP_API_URL=/api react-scripts build",
     "build-npm": "cross-env NODE_ENV=production npx babel src --out-dir dist --copy-files",
     "test": "react-scripts test --coverage --collectCoverageFrom=src/**/*.{js,jsx} --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js --collectCoverageFrom=!src/module.js --setupFiles=./.jest/setEnvVars.js --watchAll=false",
     "cypress:open": "cypress open",

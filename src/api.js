@@ -8,9 +8,9 @@
 
 import axios from 'axios';
 
-/** URL de base de l'API (surchargée par l'environnement / les tests). */
-export const BASE_URL =
-  process.env.REACT_APP_API_URL || 'http://localhost:8000';
+/** URL de base de l'API (surchargée par l'environnement / les tests).
+ *  Par défaut "/api" : même origine (déploiement combiné React + API sur Vercel). */
+export const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 /** En-tête d'autorisation admin à partir d'un token. */
 const authHeader = (token) => ({ headers: { Authorization: `Bearer ${token}` } });

@@ -77,7 +77,7 @@ services:
       - "3000:3000"
     environment:
       # URL appelée par le NAVIGATEUR -> doit passer par l'hôte, pas par le réseau interne
-      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL=http://localhost:8000/api
     volumes:
       - .:/app
       - /app/node_modules

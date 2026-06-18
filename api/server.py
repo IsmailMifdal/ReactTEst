@@ -13,7 +13,7 @@ import os
 import time
 
 import mysql.connector
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -105,13 +105,18 @@ def on_startup():
 
 
 # ─── Routes ──────────────────────────────────────────────────────────────────────
+# Toutes les routes de données sont préfixées par /api (déploiement combiné Vercel :
+# React à la racine, API sous /api/*). La racine "/" reste un healthcheck.
+router = APIRouter(prefix="/api")
+
+
 @app.get("/")
 def health():
     """Endpoint de santé (utilisé par le healthcheck docker)."""
     return {"status": "ok"}
 
 
-@app.get("/users")
+@router.get("/users")
 def list_users():
     """Liste publique : informations réduites, sans les admins."""
     conn = get_connection()
@@ -125,7 +130,7 @@ def list_users():
     return users
 
 
-@app.get("/users/count")
+@router.get("/users/count")
 def count_users():
     conn = get_connection()
     cursor = conn.cursor()
@@ -136,7 +141,7 @@ def count_users():
     return {"count": count}
 
 
-@app.post("/users", status_code=201)
+@router.post("/users", status_code=201)
 def register_user(user: UserIn):
     """Inscription publique : sauvegarde en base."""
     conn = get_connection()
@@ -165,7 +170,7 @@ def register_user(user: UserIn):
     return {"id": new_id, "nom": user.nom, "prenom": user.prenom, "ville": user.ville}
 
 
-@app.post("/login")
+@router.post("/login")
 def login(creds: Login):
     """Connexion administrateur : renvoie un jeton si les identifiants sont valides."""
     conn = get_connection()
@@ -182,7 +187,7 @@ def login(creds: Login):
     return {"token": ADMIN_TOKEN}
 
 
-@app.get("/users/{user_id}")
+@router.get("/users/{user_id}")
 def get_user(user_id: int, _: bool = Depends(require_admin)):
     """Informations privées complètes d'un utilisateur (admin uniquement)."""
     conn = get_connection()
@@ -219,3 +224,7 @@ def delete_user(user_id: int, _: bool = Depends(require_admin)):
     if deleted == 0:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
     return {"deleted": user_id}
+
+
+# Monte toutes les routes /api/* sur l'application
+app.include_router(router)
