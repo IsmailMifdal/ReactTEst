@@ -8,7 +8,7 @@ https://github.com/IsmailMifdal/ReactTEst
 https://IsmailMifdal.github.io/ReactTEst
 
 # Backend deploye (Vercel)
-<A COMPLETER : URL Vercel du backend>
+https://react-cicd-ismailmifdals-projects.vercel.app
 
 # Image Docker frontend (Docker Hub)
 https://hub.docker.com/r/angry21/frontend
