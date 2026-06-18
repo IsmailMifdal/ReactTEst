@@ -7,6 +7,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.18.0",
+    "react-router-dom": "^6.30.4",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -21,8 +23,16 @@
     "deploy": "gh-pages -d build",
     "build": "react-scripts build",
     "build-npm": "cross-env NODE_ENV=production npx babel src --out-dir dist --copy-files",
-    "test": "react-scripts test --coverage --collectCoverageFrom=src/**/*.{js,jsx} --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js --collectCoverageFrom=!src/module.js --watchAll=false",
+    "test": "react-scripts test --coverage --collectCoverageFrom=src/**/*.{js,jsx} --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js --collectCoverageFrom=!src/module.js --setupFiles=./.jest/setEnvVars.js --watchAll=false",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "e2e": "start-server-and-test start http://localhost:3000 cypress:run",
     "eject": "react-scripts eject"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!axios)/"
+    ]
   },
   "eslintConfig": {
     "extends": [
@@ -47,7 +57,9 @@
     "@babel/core": "^7.29.7",
     "@babel/plugin-transform-react-jsx": "^7.29.7",
     "cross-env": "^10.1.0",
+    "cypress": "^15.17.0",
     "gh-pages": "^6.3.0",
-    "react-test-renderer": "^19.2.5"
+    "react-test-renderer": "^19.2.5",
+    "start-server-and-test": "^3.0.11"
   }
 }

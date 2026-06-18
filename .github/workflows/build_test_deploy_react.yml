@@ -165,3 +165,45 @@ jobs:
       - name: Stop the stack
         if: always()
         run: docker compose down -v
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Cypress run (Online mode)
+        uses: cypress-io/github-action@v7
+        with:
+          build: npm run build
+          start: npm start
+          wait-on: 'http://localhost:3000'
+        # Pas de CYPRESS_offline -> Cypress.env('offline') est falsy -> mode online
+
+  e2e-offline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Run Cypress tests (Offline mode)
+        uses: cypress-io/github-action@v7
+        with:
+          build: npm run build
+          start: npm start
+          wait-on: 'http://localhost:3000'
+        env:
+          # Cypress retire le préfixe CYPRESS_ et expose la clé "offline"
+          CYPRESS_offline: true

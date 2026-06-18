@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { validateForm, isFormValid } from '../utils/validators';
+import { registerUser, countUsers } from '../api';
 import './RegisterForm.css';
 
 const INITIAL_STATE = {
@@ -16,6 +17,9 @@ function RegisterForm() {
   const [formData, setFormData] = useState(INITIAL_STATE);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [userCount, setUserCount] = useState(null);
 
 
   const handleChange = (e) => {
@@ -23,14 +27,29 @@ function RegisterForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
- 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm(formData);
     setErrors(newErrors);
-    if (isFormValid(newErrors)) {
-      localStorage.setItem('registeredUser', JSON.stringify(formData));
+    if (!isFormValid(newErrors)) {
+      return;
+    }
+
+    setSubmitting(true);
+    setApiError(null);
+    try {
+      // On délègue l'inscription au service tiers au lieu du localStorage
+      await registerUser(formData);
+      const count = await countUsers();
+      setUserCount(count);
       setSubmitted(true);
+    } catch (err) {
+      setApiError(
+        "L'inscription a échoué. Veuillez réessayer plus tard."
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -42,6 +61,11 @@ function RegisterForm() {
           Bienvenue, <strong>{formData.prenom} {formData.nom}</strong> !
         </p>
         <p>Un email de confirmation sera envoyé à {formData.email}.</p>
+        {userCount !== null && (
+          <p data-testid="user-count">
+            Nombre d'utilisateurs inscrits : <strong>{userCount}</strong>
+          </p>
+        )}
       </div>
     );
   }
@@ -54,6 +78,12 @@ function RegisterForm() {
       noValidate
     >
       <h1>Inscription</h1>
+
+      {apiError && (
+        <div className="api-error" role="alert" data-testid="api-error">
+          {apiError}
+        </div>
+      )}
 
       {/* Nom */}
       <div className="form-group">
@@ -164,7 +194,9 @@ function RegisterForm() {
         )}
       </div>
 
-      <button type="submit">S'inscrire</button>
+      <button type="submit" disabled={submitting}>
+        {submitting ? 'Envoi en cours…' : "S'inscrire"}
+      </button>
     </form>
   );
 }

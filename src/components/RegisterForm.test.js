@@ -1,41 +1,25 @@
 /**
  * @fileoverview Tests d'intégration pour le composant RegisterForm.
  *
- * Ces tests vérifient le comportement complet du formulaire :
- *  - Rendu initial
- *  - Mise à jour des champs (handleChange)
- *  - Affichage des erreurs sur soumission invalide
- *  - Sauvegarde localStorage et affichage du succès sur soumission valide
+ * Le composant ne stocke plus les données en localStorage : il délègue
+ * l'inscription au service API (src/api.js). On simule donc ce module avec
+ * jest.mock afin de tester le comportement du composant aussi bien quand
+ * l'API répond en succès qu'en erreur.
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RegisterForm from './RegisterForm';
+import { registerUser, countUsers } from '../api';
 
-// ─── Mock localStorage ────────────────────────────────────────────────────────
-const localStorageMock = (() => {
-  let store = {};
-  return {
-    getItem: (key) => store[key] ?? null,
-    setItem: (key, value) => {
-      store[key] = String(value);
-    },
-    removeItem: (key) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+// ─── Mock du service API ────────────────────────────────────────────────────────
+jest.mock('../api');
 
 
 const VALID_DATA = {
   nom: 'Dupont',
   prenom: 'Jean',
   email: 'jean.dupont@example.com',
-  dateDeNaissance: '1995-06-15',  
+  dateDeNaissance: '1995-06-15',
   ville: 'Paris',
   codePostal: '75001',
 };
@@ -67,10 +51,13 @@ const fillForm = (overrides = {}) => {
 
 describe('RegisterForm', () => {
   beforeEach(() => {
-    localStorageMock.clear();
+    jest.clearAllMocks();
+    // Comportement par défaut : succès
+    registerUser.mockResolvedValue({ id: 11, ...VALID_DATA });
+    countUsers.mockResolvedValue(10);
   });
 
-  
+
   describe('Rendu initial', () => {
     test('affiche le titre "Inscription"', () => {
       render(<RegisterForm />);
@@ -100,7 +87,7 @@ describe('RegisterForm', () => {
     });
   });
 
-  
+
   describe('handleChange', () => {
     test('met à jour le champ nom', () => {
       render(<RegisterForm />);
@@ -176,10 +163,10 @@ describe('RegisterForm', () => {
       );
     });
 
-    test('ne sauvegarde pas dans le localStorage si le formulaire est invalide', () => {
+    test('n\'appelle pas l\'API si le formulaire est invalide', () => {
       render(<RegisterForm />);
       fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
-      expect(localStorageMock.getItem('registeredUser')).toBeNull();
+      expect(registerUser).not.toHaveBeenCalled();
     });
 
     test('ne passe pas en vue de succès si le formulaire est invalide', () => {
@@ -189,53 +176,82 @@ describe('RegisterForm', () => {
     });
   });
 
-  // ── Soumission valide ────────────────────────────────────────────────────────
+  // ── Soumission valide (API en succès) ────────────────────────────────────────
   describe('Soumission avec données valides', () => {
-    test('sauvegarde les données dans le localStorage', () => {
+    test('appelle registerUser avec les données du formulaire', async () => {
       render(<RegisterForm />);
       fillForm();
       fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
 
-      const saved = JSON.parse(localStorageMock.getItem('registeredUser'));
-      expect(saved).not.toBeNull();
-      expect(saved.nom).toBe('Dupont');
-      expect(saved.prenom).toBe('Jean');
-      expect(saved.email).toBe('jean.dupont@example.com');
+      await waitFor(() =>
+        expect(registerUser).toHaveBeenCalledWith(VALID_DATA)
+      );
     });
 
-    test('affiche le message de succès', () => {
+    test('affiche le message de succès', async () => {
       render(<RegisterForm />);
       fillForm();
       fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
 
-      expect(screen.getByTestId('success-message')).toBeInTheDocument();
+      expect(await screen.findByTestId('success-message')).toBeInTheDocument();
       expect(screen.getByText(/inscription réussie/i)).toBeInTheDocument();
     });
 
-    test('affiche le prénom et le nom dans le message de succès', () => {
+    test('affiche le prénom et le nom dans le message de succès', async () => {
       render(<RegisterForm />);
       fillForm();
       fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
 
-      expect(screen.getByText(/Jean Dupont/)).toBeInTheDocument();
+      expect(await screen.findByText(/Jean Dupont/)).toBeInTheDocument();
     });
 
-    test('affiche l\'email dans le message de succès', () => {
+    test('affiche le nombre d\'utilisateurs renvoyé par l\'API', async () => {
       render(<RegisterForm />);
       fillForm();
       fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
 
-      expect(screen.getByText(/jean\.dupont@example\.com/)).toBeInTheDocument();
+      const count = await screen.findByTestId('user-count');
+      expect(count).toHaveTextContent('10');
+      expect(countUsers).toHaveBeenCalled();
     });
 
-    test('masque le formulaire après une soumission réussie', () => {
+    test('masque le formulaire après une soumission réussie', async () => {
       render(<RegisterForm />);
       fillForm();
       fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
 
+      await screen.findByTestId('success-message');
       expect(
         screen.queryByRole('button', { name: /s'inscrire/i })
       ).not.toBeInTheDocument();
+    });
+  });
+
+  // ── Soumission valide mais API en erreur ─────────────────────────────────────
+  describe('Soumission avec données valides mais API en erreur', () => {
+    test('affiche un message d\'erreur API et reste sur le formulaire', async () => {
+      registerUser.mockRejectedValueOnce(new Error('Network Error'));
+
+      render(<RegisterForm />);
+      fillForm();
+      fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
+
+      expect(await screen.findByTestId('api-error')).toBeInTheDocument();
+      expect(screen.queryByTestId('success-message')).not.toBeInTheDocument();
+      // Le formulaire est toujours affiché pour réessayer
+      expect(
+        screen.getByRole('button', { name: /s'inscrire/i })
+      ).toBeInTheDocument();
+    });
+
+    test('n\'affiche pas le succès si countUsers échoue', async () => {
+      countUsers.mockRejectedValueOnce(new Error('Network Error'));
+
+      render(<RegisterForm />);
+      fillForm();
+      fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
+
+      expect(await screen.findByTestId('api-error')).toBeInTheDocument();
     });
   });
 });
