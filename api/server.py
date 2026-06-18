@@ -1,12 +1,4 @@
-"""API FastAPI de gestion des inscriptions.
 
-Fonctionnalités :
-- Inscription d'un utilisateur (sauvegarde en base MySQL)
-- Liste publique des utilisateurs (informations réduites)
-- Connexion administrateur (compte seedé via variables d'environnement)
-- Consultation des informations privées d'un utilisateur (admin)
-- Suppression d'un utilisateur (admin)
-"""
 
 import hashlib
 import os
@@ -104,9 +96,7 @@ def on_startup():
             time.sleep(2)
 
 
-# ─── Routes ──────────────────────────────────────────────────────────────────────
-# Toutes les routes de données sont préfixées par /api (déploiement combiné Vercel :
-# React à la racine, API sous /api/*). La racine "/" reste un healthcheck.
+
 router = APIRouter(prefix="/api")
 
 
@@ -128,6 +118,28 @@ def list_users():
     cursor.close()
     conn.close()
     return users
+
+
+@router.get("/dbcheck")
+def db_check():
+    """Diagnostic : teste la connexion DB et renvoie l'erreur exacte si échec.
+    (À retirer une fois la prod validée.)"""
+    info = {
+        "DB_HOST": DB_CONFIG["host"],
+        "DB_NAME": DB_CONFIG["database"],
+        "DB_USER": DB_CONFIG["user"],
+        "DB_PORT": DB_CONFIG["port"],
+    }
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM utilisateur")
+        (count,) = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return {"ok": True, "users_count": count, "config": info}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc), "config": info}
 
 
 @router.get("/users/count")
@@ -209,7 +221,7 @@ def get_user(user_id: int, _: bool = Depends(require_admin)):
     return user
 
 
-@app.delete("/users/{user_id}")
+@router.delete("/users/{user_id}")
 def delete_user(user_id: int, _: bool = Depends(require_admin)):
     """Suppression d'un utilisateur (admin uniquement)."""
     conn = get_connection()
